@@ -10,22 +10,30 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
-)
 
-func alert() {
-	log.Println("I would send alert here")
-}
+	"github.com/jpweber/cole/notifications"
+)
 
 const (
 	version = "v0.1.0"
 )
 
-var interval int
+var (
+	interval       *int
+	source         *string
+	message        *string
+	remoteEndpoint *string
+	method         *string
+)
 
 func main() {
 
 	versionPtr := flag.Bool("v", false, "Version")
-	interval := flag.Int("t", 30, "Time interval, in seconds, to wait before sending an alert if a ping is not received")
+	interval = flag.Int("t", 60, "Time interval, in seconds, to wait before sending an alert \nif a ping is not received")
+	source = flag.String("s", "", "name of the prometheus server we are watching")
+	message = flag.String("b", "Did not recieve a deadman switch alert.", "Body of the notification")
+	remoteEndpoint = flag.String("e", "", "URL of the endpoint to send messages to. Include the scheme http|https")
+	method = flag.String("m", "POST", "HTTP method to use when talking to the remote endpoint. Default is POST")
 	// Once all flags are declared, call `flag.Parse()`
 	// to execute the command-line parsing.
 	flag.Parse()
@@ -35,22 +43,39 @@ func main() {
 	}
 
 	log.Println("Starting application...")
-	f := func() {
-		alert()
+
+	// TODO:
+	// read from config file
+
+	// create notification
+	n := notifications.Notification{
+		Source:         *source,
+		Message:        *message,
+		RemoteEndpoint: *remoteEndpoint,
+		Method:         *method,
 	}
 
-	dmsTimer := time.AfterFunc(time.Duration(*interval)*time.Second, f)
+	// init first timer at launch of service
+	// TODO:
+	// figure out a way to start another timer after this alert fires.
+	// we want this to continue to go off as long as the dead man
+	// switch is not being tripped.
+	dmsTimer := time.AfterFunc(time.Duration(*interval)*time.Second, n.Alert)
 
+	// HTTP Handlers
 	http.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
 		log.Println("Pong")
+		// stop any existing timer channels
 		dmsTimer.Stop()
-		dmsTimer = time.AfterFunc(time.Duration(*interval)*time.Second, f)
+		// start a new timer
+		dmsTimer = time.AfterFunc(time.Duration(*interval)*time.Second, n.Alert)
 	})
 
 	http.HandleFunc("/version", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, version)
 	})
 
+	// Server Lifecycle
 	s := http.Server{Addr: ":8080"}
 	go func() {
 		log.Fatal(s.ListenAndServe())

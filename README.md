@@ -16,7 +16,7 @@ These limitations are because of the current state and will be supported
 * only knows how to send alerts to http endpoints that accept a json payload. 
 
 ## How does it work
-When you start cole up, one of the required flags is a time duration. Cole will start a timer for that specified duration and if doesn't recieve a message from the deadman alert inside of that time duration, it will fire off an alert of it's own. There is a forthcoming blog post on [jpweber.io](http://jpweber.io
+When you start cole up, one of the required flags is a time duration. Cole will start a timer for that specified duration and if doesn't recieve a message from the deadman alert inside of that time duration, it will fire off an alert of it's own. There is a forthcoming blog post on [jpweber.io](http://jpweber.io/blog
 ) on how to leverage a deadman switch alert in your prometheus monitoring and how something like Cole fits in which will provid some more detail in to the thinking of creating a tool like this. 
 
 ## Simple way to see that its working

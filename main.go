@@ -4,13 +4,15 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
+	log "github.com/sirupsen/logrus"
+
+	"github.com/jpweber/cole/dmtimer"
 	"github.com/jpweber/cole/notifications"
 )
 
@@ -60,15 +62,18 @@ func main() {
 	// figure out a way to start another timer after this alert fires.
 	// we want this to continue to go off as long as the dead man
 	// switch is not being tripped.
-	dmsTimer := time.AfterFunc(time.Duration(*interval)*time.Second, n.Alert)
+
+	// init list of timers
+	timers := dmtimer.DmTimers{}
+	timers["foo"] = time.AfterFunc(time.Duration(*interval)*time.Second, n.Alert)
 
 	// HTTP Handlers
 	http.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
-		log.Println("Pong")
+		log.Info("Pong")
 		// stop any existing timer channels
-		dmsTimer.Stop()
+		timers["foo"].Stop()
 		// start a new timer
-		dmsTimer = time.AfterFunc(time.Duration(*interval)*time.Second, n.Alert)
+		timers["foo"] = time.AfterFunc(time.Duration(*interval)*time.Second, n.Alert)
 	})
 
 	http.HandleFunc("/version", func(w http.ResponseWriter, r *http.Request) {
@@ -76,7 +81,11 @@ func main() {
 	})
 
 	// Server Lifecycle
-	s := http.Server{Addr: ":8080"}
+	s := &http.Server{
+		Addr:         ":8080",
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
+	}
 	go func() {
 		log.Fatal(s.ListenAndServe())
 	}()
@@ -85,7 +94,7 @@ func main() {
 	signal.Notify(signalChan, syscall.SIGINT, syscall.SIGTERM)
 	<-signalChan
 
-	log.Println("Shutdown signal received, exiting...")
+	log.Info("Shutdown signal received, exiting...")
 
 	s.Shutdown(context.Background())
 }

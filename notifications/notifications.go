@@ -4,9 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // Notification - the body of the alert message from cole
@@ -46,22 +47,22 @@ func (n *Notification) genericWebHook() {
 
 	jsonBody, err := n.constructBody()
 	if err != nil {
-		log.Println("Error marshalling new data", err)
+		log.Error("Error marshalling new data", err)
 	}
 	req, err := http.NewRequest(n.Method, n.RemoteEndpoint, bytes.NewBuffer(jsonBody))
 	req.Header.Set("Content-Type", "application/json")
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Println("Error:", err)
+		log.Error("Error:", err)
 	}
 	defer resp.Body.Close()
 
 	respData, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Println("Error readong reponse boddy", err)
+		log.Error("Error readong reponse boddy", err)
 	}
 
-	log.Println(string(respData))
+	log.Info(string(respData))
 
 }

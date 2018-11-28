@@ -65,15 +65,24 @@ func main() {
 
 	// init list of timers
 	timers := dmtimer.DmTimers{}
-	timers["foo"] = time.AfterFunc(time.Duration(*interval)*time.Second, n.Alert)
+// 	timers["foo"] = time.AfterFunc(time.Duration(*interval)*time.Second, n.Alert)
 
 	// HTTP Handlers
 	http.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
 		log.Info("Pong")
-		// stop any existing timer channels
-		timers["foo"].Stop()
+		timerID , err := dmtimer.ParseTimerID(r.URL)
+		if err != nil{
+			log.Println("Cannot register checkin", err)
+		}
+		
+		if timers[timerID] != nil {
+			// stop any existing timer channel
+			timers[timerID].Stop()
+		}
+		
 		// start a new timer
-		timers["foo"] = time.AfterFunc(time.Duration(*interval)*time.Second, n.Alert)
+		timers.Add(time.AfterFunc(time.Duration(*interval)*time.Second, n.Alert))
+		
 	})
 
 	http.HandleFunc("/version", func(w http.ResponseWriter, r *http.Request) {

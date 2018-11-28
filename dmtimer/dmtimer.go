@@ -1,31 +1,45 @@
 package dmtimer
 
-import "time"
+import (
+	"fmt"
+	"strings"
+	"sync"
+	"time"
+)
 
-type DmTimers map[string]*time.Timer
-
-func (d *DmTimers) Add(key, value string){
-	mu.Lock()
- 	d[key] = value
-	mu.Unlock()	
+type DmTimers struct {
+	list map[string]*time.Timer
+	mu   sync.Mutex
 }
 
-func (d *DmTimers) Del(key string){
-	mu.Lock()
-	delete(d, key)
-	mu.Unlock()	
+func (d *DmTimers) Get(key string) *time.Timer {
+	return d.list[key]
 }
 
+func (d *DmTimers) Add(key string, value *time.Timer) {
+	d.mu.Lock()
+	if d.list == nil {
+		d.list = make(map[string]*time.Timer)
+	}
+	d.list[key] = value
+	d.mu.Unlock()
+}
 
-func ParseTimerID(url string) (string, error){
+func (d *DmTimers) Del(key string, value *time.Timer) {
+	d.mu.Lock()
+	delete(d.list, key)
+	d.mu.Unlock()
+}
+
+func ParseTimerID(url string) (string, error) {
 	// expeted format foo.com/ping/123456asdf we want the part afer /ping/
 	urlParts := strings.Split(url, "/")
-	if len(urlParts) <= 1 {
+	if len(urlParts) <= 2 {
 		return "", fmt.Errorf("Url did not include a Timer ID")
 	}
-	
+
 	// get rid of any stray spaces
-	timerID = string.Trim(timerID)
-	
+	timerID := strings.TrimSpace(urlParts[2])
+
 	return timerID, nil
-} 
+}

@@ -51,7 +51,6 @@ func main() {
 
 	// create notification
 	n := notifications.Notification{
-		Source:         *source,
 		Message:        *message,
 		RemoteEndpoint: *remoteEndpoint,
 		Method:         *method,

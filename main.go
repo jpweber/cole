@@ -12,6 +12,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
+	"github.com/jpweber/cole/alertmanager"
 	"github.com/jpweber/cole/dmtimer"
 	"github.com/jpweber/cole/notifications"
 )
@@ -51,7 +52,6 @@ func main() {
 
 	// create notification
 	n := notifications.Notification{
-		Message:        *message,
 		RemoteEndpoint: *remoteEndpoint,
 		Method:         *method,
 	}
@@ -67,11 +67,21 @@ func main() {
 
 	// HTTP Handlers
 	http.HandleFunc("/ping/", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "POST" {
+			http.Error(w, "Only POST method is supported", 405)
+			return
+		}
 		log.Info("Pong")
 		timerID, err := dmtimer.ParseTimerID(r.URL.Path)
 		log.Info(timerID)
 		if err != nil {
 			log.Println("Cannot register checkin", err)
+		}
+
+		n.Message, err = alertmanager.DecodeAlertMessage(r)
+		if err != nil {
+			log.Error(err)
+			return
 		}
 
 		if timers.Get(timerID) != nil {
@@ -81,6 +91,7 @@ func main() {
 
 		// start a new timer
 		timers.Add(timerID, time.AfterFunc(time.Duration(*interval)*time.Second, n.Alert))
+		w.WriteHeader(200)
 
 	})
 

@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/jpweber/cole/alertmanager"
+
 	"github.com/jpweber/cole/slack"
 	log "github.com/sirupsen/logrus"
 )
@@ -19,7 +21,7 @@ import (
 // method: http method to use POST,GET,PUT etc.
 type Notification struct {
 	TimerID        string
-	Message        string
+	Message        alertmanager.AlertMessage
 	Timestamp      time.Time
 	RemoteEndpoint string
 	Method         string
@@ -96,14 +98,15 @@ func genericWebHook(endpoint string, body slack.Payload) {
 func (n *Notification) slack() {
 
 	// my personal slack for testing
-	webhookUrl := "https://hooks.slack.com/services/..."
+	// TODO need to figure out how this is going to be passed to us.
+	webhookURL := "https://hooks.slack.com/services/..."
 
 	payload := slack.Payload{
-		Text:      "Hello from Cole",
+		Text:      n.Message.CommonAnnotations["summary"] + " - " + n.Message.CommonAnnotations["description"],
 		Username:  "Cole - DeadManSwitch Monitor",
 		Channel:   "#general",
 		IconEmoji: ":monkey_face:",
 	}
 
-	genericWebHook(webhookUrl, payload)
+	genericWebHook(webhookURL, payload)
 }

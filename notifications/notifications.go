@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
-	"time"
 
 	"github.com/jpweber/cole/alertmanager"
 
@@ -22,13 +21,11 @@ import (
 type Notification struct {
 	TimerID        string
 	Message        alertmanager.AlertMessage
-	Timestamp      time.Time
 	RemoteEndpoint string
-	Method         string
+	HTTPMethod     string
 }
 
 func (n *Notification) constructBody() ([]byte, error) {
-	n.Timestamp = time.Now()
 	jsonBody, err := json.Marshal(n)
 	if err != nil {
 		return jsonBody, err
@@ -47,13 +44,9 @@ func (n *Notification) Alert() {
 }
 
 // genericWebHook - takes url as and expects json to be the payload
-func (n *Notification) genericWebHook() {
+func (n *Notification) genericWebHook(jsonBody []byte) {
 
-	jsonBody, err := n.constructBody()
-	if err != nil {
-		log.Error("Error marshalling new data", err)
-	}
-	req, err := http.NewRequest(n.Method, n.RemoteEndpoint, bytes.NewBuffer(jsonBody))
+	req, err := http.NewRequest(n.HTTPMethod, n.RemoteEndpoint, bytes.NewBuffer(jsonBody))
 	req.Header.Set("Content-Type", "application/json")
 	client := &http.Client{}
 	resp, err := client.Do(req)
@@ -64,31 +57,7 @@ func (n *Notification) genericWebHook() {
 
 	respData, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Error("Error readong reponse boddy", err)
-	}
-
-	log.Info(string(respData))
-
-}
-
-// TODO:
-// temporary hack just to test the slack part before I figure
-// out the rest of the proper integration
-func genericWebHook(endpoint string, body slack.Payload) {
-
-	jsonBody, err := json.Marshal(body)
-	req, err := http.NewRequest("POST", endpoint, bytes.NewBuffer(jsonBody))
-	req.Header.Set("Content-Type", "application/json")
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Error("Error:", err)
-	}
-	defer resp.Body.Close()
-
-	respData, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Error("Error readong reponse boddy", err)
+		log.Error("Error reading reponse boddy", err)
 	}
 
 	log.Info(string(respData))
@@ -96,17 +65,22 @@ func genericWebHook(endpoint string, body slack.Payload) {
 }
 
 func (n *Notification) slack() {
-
+	// DEBUG
+	log.Println("slack method")
 	// my personal slack for testing
 	// TODO need to figure out how this is going to be passed to us.
-	webhookURL := "https://hooks.slack.com/services/..."
-
+	// n.RemoteEndpoint = "https://hooks.slack.com/services/..."
+	n.RemoteEndpoint = "https://hooks.slack.com/services/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"
+	n.HTTPMethod = "POST"
 	payload := slack.Payload{
 		Text:      n.Message.CommonAnnotations["summary"] + " - " + n.Message.CommonAnnotations["description"],
 		Username:  "Cole - DeadManSwitch Monitor",
 		Channel:   "#general",
 		IconEmoji: ":monkey_face:",
 	}
-
-	genericWebHook(webhookURL, payload)
+	jsonBody, err := json.Marshal(payload)
+	if err != nil {
+		log.Error("Error marshalling new data", err)
+	}
+	n.genericWebHook(jsonBody)
 }

@@ -51,10 +51,7 @@ func main() {
 	// read from config file
 
 	// create notification
-	n := notifications.Notification{
-		RemoteEndpoint: *remoteEndpoint,
-		Method:         *method,
-	}
+	n := notifications.Notification{}
 
 	// init first timer at launch of service
 	// TODO:

@@ -8,11 +8,13 @@ import (
 )
 
 type Conf struct {
-	SenderType   string
-	Interval     int
-	HTTPEndpoint string
-	HTTPMethod   string
-	EmailAddress string
+	SenderType       string
+	Interval         int
+	HTTPEndpoint     string
+	HTTPMethod       string
+	EmailAddress     string
+	PDAPIKey         string
+	PDIntegrationKey string
 }
 
 // Reads info from config file

@@ -3,13 +3,13 @@ package notifier
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 
-	"github.com/jpweber/cole/dmtimer"
-
 	"github.com/jpweber/cole/alertmanager"
 	"github.com/jpweber/cole/configuration"
+	"github.com/jpweber/cole/dmtimer"
 	"github.com/jpweber/cole/slack"
 
 	log "github.com/sirupsen/logrus"
@@ -41,6 +41,8 @@ func (n *NotificationSet) Alert() {
 	switch n.Config.SenderType {
 	case "slack":
 		n.slack()
+	case "pagerduty":
+		n.pagerDuty()
 	default:
 		// thinking I should just pass the whole alert message here
 		// n.genericWebHook()
@@ -77,11 +79,6 @@ func (n *NotificationSet) genericWebHook(jsonBody []byte) {
 func (n *NotificationSet) slack() {
 	// DEBUG
 	log.Println("slack method")
-	// my personal slack for testing
-	// TODO need to figure out how this is going to be passed to us.
-	// n.RemoteEndpoint = "https://hooks.slack.com/services/..."
-	n.Config.HTTPEndpoint = "https://hooks.slack.com/services/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"
-	n.Config.HTTPMethod = "POST"
 	payload := slack.Payload{
 		Text:      n.Message.CommonAnnotations["summary"] + " - " + n.Message.CommonAnnotations["description"],
 		Username:  "Cole - DeadManSwitch Monitor",
@@ -93,4 +90,41 @@ func (n *NotificationSet) slack() {
 		log.Error("Error marshalling new data", err)
 	}
 	n.genericWebHook(jsonBody)
+}
+
+func (n *NotificationSet) pagerDuty() {
+
+	// pdPayload := pagerduty.V2Payload{
+	// 	Summary:  n.Message.CommonAnnotations["summary"],
+	// 	Source:   n.Message.GroupLabels["instance"],
+	// 	Severity: n.Message.CommonLabels["severity"],
+
+	// 	Timestamp: time.Now().Format(time.RFC3339),
+	// 	Group:     n.Message.CommonLabels["job"],
+	// 	Class:     n.Message.CommonLabels["alertname"],
+	// 	Details:   n.Message.CommonAnnotations["description"],
+	// }
+	// event := pagerduty.V2Event{
+	// 	RoutingKey: n.Config.PDIntegrationKey,
+	// 	Action:     "trigger",
+	// 	DedupKey:   string(n.Message.GroupKey),
+	// 	Client:     "Cole - Dead Man Switch Monitor",
+	// 	Payload:    &pdPayload,
+	// }
+
+	// resp, err := pagerduty.ManageEvent(event)
+	// if err != nil {
+	// 	log.Errorf("Error Created Event in Pager Duty: %s", err)
+	// 	return
+	// }
+	// log.Printf("%+v", resp)
+	request, _ := http.NewRequest("GET", "https://api.pagerduty.com/incidents", nil)
+	request.Header.Set("Accept", "application/vnd.pagerduty+json;version=2")
+	request.Header.Set("Authorization", "Token token="+n.Config.PDAPIKey)
+	resp, err := http.DefaultClient.Do(request)
+	if err != nil {
+		log.Fatal(err)
+	}
+	body, _ := ioutil.ReadAll(resp.Body)
+	fmt.Println(string(body))
 }

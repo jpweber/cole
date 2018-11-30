@@ -10,6 +10,22 @@
   version = "v0.3.1"
 
 [[projects]]
+  branch = "master"
+  digest = "1:de4eb123b15ad1a4b72b1ee2f84c42bec40332e25de9eaafd6d8d25bca777744"
+  name = "github.com/PagerDuty/go-pagerduty"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "fe8f9c4593d05f029afeb2c08c3e220120306506"
+
+[[projects]]
+  digest = "1:a63cff6b5d8b95638bfe300385d93b2a6d9d687734b863da8e09dc834510a690"
+  name = "github.com/google/go-querystring"
+  packages = ["query"]
+  pruneopts = "UT"
+  revision = "44c6ddd0a2342c386950e880b658017258da92fc"
+  version = "v1.0.0"
+
+[[projects]]
   digest = "1:0a69a1c0db3591fcefb47f115b224592c8dfa4368b7ba9fae509d5e16cdc95c8"
   name = "github.com/konsorten/go-windows-terminal-sequences"
   packages = ["."]
@@ -49,6 +65,7 @@
   analyzer-version = 1
   input-imports = [
     "github.com/BurntSushi/toml",
+    "github.com/PagerDuty/go-pagerduty",
     "github.com/sirupsen/logrus",
   ]
   solver-name = "gps-cdcl"

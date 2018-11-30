@@ -1,0 +1,7 @@
+# Example Cole configuration file
+
+SenderType = "slack"
+Interval = 10
+HTTPEndpoint = "https://hooks.slack.com/services/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"
+HTTPMethod = "POST"
+#EmailAddress = ""

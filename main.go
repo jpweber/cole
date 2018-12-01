@@ -12,9 +12,8 @@ import (
 
 	"github.com/jpweber/cole/configuration"
 	"github.com/jpweber/cole/notifier"
-	log "github.com/sirupsen/logrus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/prometheus/client_golang/prometheus"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/jpweber/cole/alertmanager"
 	"github.com/jpweber/cole/dmtimer"
@@ -89,7 +88,7 @@ func main() {
 	http.HandleFunc("/version", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, version)
 	})
-	
+
 	http.Handle("/metrics", promhttp.Handler())
 
 	// Server Lifecycle

@@ -4,36 +4,29 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
-	"github.com/jpweber/cole/notifications"
+	"github.com/jpweber/cole/configuration"
+	"github.com/jpweber/cole/notifier"
+	log "github.com/sirupsen/logrus"
+
+	"github.com/jpweber/cole/alertmanager"
+	"github.com/jpweber/cole/dmtimer"
 )
 
 const (
 	version = "v0.1.0"
 )
 
-var (
-	interval       *int
-	source         *string
-	message        *string
-	remoteEndpoint *string
-	method         *string
-)
-
 func main() {
 
 	versionPtr := flag.Bool("v", false, "Version")
-	interval = flag.Int("t", 60, "Time interval, in seconds, to wait before sending an alert \nif a ping is not received")
-	source = flag.String("s", "", "name of the prometheus server we are watching")
-	message = flag.String("b", "Did not recieve a deadman switch alert.", "Body of the notification")
-	remoteEndpoint = flag.String("e", "", "URL of the endpoint to send messages to. Include the scheme http|https")
-	method = flag.String("m", "POST", "HTTP method to use when talking to the remote endpoint. Default is POST")
+	configFile := flag.String("c", "example.toml", "Path to Configuration File")
+
 	// Once all flags are declared, call `flag.Parse()`
 	// to execute the command-line parsing.
 	flag.Parse()
@@ -44,31 +37,51 @@ func main() {
 
 	log.Println("Starting application...")
 
-	// TODO:
 	// read from config file
-
-	// create notification
-	n := notifications.Notification{
-		Source:         *source,
-		Message:        *message,
-		RemoteEndpoint: *remoteEndpoint,
-		Method:         *method,
-	}
+	conf := configuration.ReadConfig(*configFile)
 
 	// init first timer at launch of service
 	// TODO:
 	// figure out a way to start another timer after this alert fires.
 	// we want this to continue to go off as long as the dead man
 	// switch is not being tripped.
-	dmsTimer := time.AfterFunc(time.Duration(*interval)*time.Second, n.Alert)
+
+	// init notificaiton set
+	ns := notifier.NotificationSet{
+		Config: conf,
+		Timers: dmtimer.DmTimers{},
+	}
 
 	// HTTP Handlers
-	http.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
-		log.Println("Pong")
-		// stop any existing timer channels
-		dmsTimer.Stop()
+	http.HandleFunc("/ping/", func(w http.ResponseWriter, r *http.Request) {
+		// init my error
+		var err error
+
+		if r.Method != "POST" {
+			http.Error(w, "Only POST method is supported", 405)
+			return
+		}
+		log.Info("Pong")
+		ns.Message, err = alertmanager.DecodeAlertMessage(r)
+		if err != nil {
+			log.Error(err)
+			return
+		}
+		timerID := ns.Message.GroupLabels["alertname"]
+		log.Info(timerID)
+		if err != nil {
+			log.Println("Cannot register checkin", err)
+		}
+
+		if ns.Timers.Get(timerID) != nil {
+			// stop any existing timer channel
+			ns.Timers.Get(timerID).Stop()
+		}
+
 		// start a new timer
-		dmsTimer = time.AfterFunc(time.Duration(*interval)*time.Second, n.Alert)
+		ns.Timers.Add(timerID, time.AfterFunc(time.Duration(ns.Config.Interval)*time.Second, ns.Alert))
+		w.WriteHeader(200)
+
 	})
 
 	http.HandleFunc("/version", func(w http.ResponseWriter, r *http.Request) {
@@ -76,7 +89,11 @@ func main() {
 	})
 
 	// Server Lifecycle
-	s := http.Server{Addr: ":8080"}
+	s := &http.Server{
+		Addr:         ":8080",
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
+	}
 	go func() {
 		log.Fatal(s.ListenAndServe())
 	}()
@@ -85,7 +102,7 @@ func main() {
 	signal.Notify(signalChan, syscall.SIGINT, syscall.SIGTERM)
 	<-signalChan
 
-	log.Println("Shutdown signal received, exiting...")
+	log.Info("Shutdown signal received, exiting...")
 
 	s.Shutdown(context.Background())
 }

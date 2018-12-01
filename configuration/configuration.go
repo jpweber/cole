@@ -1,23 +1,31 @@
-package confiuration
+package configuration
 
 import (
 	"log"
 	"os"
-	"toml"
+
+	"github.com/BurntSushi/toml"
 )
 
-type Config struct {
+type Conf struct {
+	SenderType       string
+	Interval         int
+	HTTPEndpoint     string
+	HTTPMethod       string
+	EmailAddress     string
+	PDAPIKey         string
+	PDIntegrationKey string
 }
 
 // Reads info from config file
-func ReadConfig(fileName string) Config {
+func ReadConfig(fileName string) Conf {
 	var configfile = fileName
 	_, err := os.Stat(configfile)
 	if err != nil {
 		log.Fatal("Config file is missing: ", configfile)
 	}
 
-	var config Config
+	var config Conf
 	if _, err := toml.DecodeFile(configfile, &config); err != nil {
 		log.Fatal(err)
 	}

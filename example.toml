@@ -1,0 +1,14 @@
+# Example Cole configuration file
+
+# Slack
+# SenderType = "slack"
+# Interval = 10
+# HTTPEndpoint = "https://hooks.slack.com/services/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"
+# HTTPMethod = "POST"
+
+
+# PagerDuty
+SenderType = "pagerduty"
+Interval = 10
+PDAPIKey = "noiD8-khbpNpgCM6h4sG"
+PDIntegrationKey = "5353fb993888441881bc3f014798c8af"

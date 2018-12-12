@@ -36,7 +36,7 @@ func ping(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Only POST method is supported", 405)
 		return
 	}
-	// ns.Message, err = alertmanager.DecodeAlertMessage(r)
+
 	defer r.Body.Close()
 	data := template.Data{}
 	if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
@@ -48,11 +48,12 @@ func ping(w http.ResponseWriter, r *http.Request) {
 	timerID := ns.Message.Alerts[0].Labels["alertname"]
 	// DEBUG
 	log.Println("timerID:", timerID)
-	log.Info(timerID)
 	if err != nil {
 		log.Println("Cannot register checkin", err)
 	}
 
+	// log metric of alert recieved
+	dmAlertsRecieved.Inc()
 	if ns.Timers.Get(timerID) != nil {
 		// stop any existing timer channel
 		ns.Timers.Get(timerID).Stop()

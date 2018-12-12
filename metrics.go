@@ -26,6 +26,14 @@ var (
 			Help:      "Number of times a DeadManSwitch has sent cole and alert.",
 		},
 	)
+
+	dmAlertsSent = prometheus.NewCounter(
+		prometheus.CounterOpts{
+			Namespace: "cole",
+			Name:      "deadman_alerts_sent",
+			Help:      "Number of times a cole alert has been sent beause of missed DeadManSwitch alerts",
+		},
+	)
 )
 
 func init() {

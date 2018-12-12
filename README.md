@@ -41,6 +41,10 @@ PDIntegrationKey = "5353fb993888441811111111111"
 ## Simple way to see that its working
 `./cole -c example.toml`
 
+## API Endpoints
+* `/ping/<timerid>`
+* `/id`
+* `/version`
 
 ## Build locally
 * clone the repo

@@ -69,7 +69,8 @@ func main() {
 	}
 
 	// HTTP Handlers
-	http.HandleFunc("/ping", logger(ping))
+	http.HandleFunc("/ping/", logger(ping))
+	http.HandleFunc("/id", logger(genID))
 	http.HandleFunc("/version", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, version)
 	})

@@ -13,7 +13,6 @@ type Conf struct {
 	HTTPEndpoint     string
 	HTTPMethod       string
 	EmailAddress     string
-	PDAPIKey         string
 	PDIntegrationKey string
 }
 

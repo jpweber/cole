@@ -26,6 +26,18 @@ var (
 	ns = notifier.NotificationSet{}
 )
 
+func init() {
+	// Log as text. Color with tty attached
+	log.SetFormatter(&log.TextFormatter{})
+
+	// Output to stdout instead of the default stderr
+	// Can be any io.Writer, see below for File example
+	log.SetOutput(os.Stdout)
+
+	// Only log the warning severity or above.
+	// log.SetLevel(log.WarnLevel)
+}
+
 func main() {
 
 	versionPtr := flag.Bool("v", false, "Version")

@@ -115,6 +115,14 @@
   revision = "aa55a523dc0a8297edf51bb75e8eec13eb3be45d"
 
 [[projects]]
+  digest = "1:2e76a73cb51f42d63a2a1a85b3dc5731fd4faf6821b434bd0ef2c099186031d6"
+  name = "github.com/rs/xid"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "15d26544def341f036c5f8dca987a4cbe575032c"
+  version = "v1.2.1"
+
+[[projects]]
   digest = "1:69b1cc331fca23d702bd72f860c6a647afd0aa9fcbc1d0659b1365e26546dd70"
   name = "github.com/sirupsen/logrus"
   packages = ["."]
@@ -150,6 +158,7 @@
     "github.com/prometheus/alertmanager/template",
     "github.com/prometheus/client_golang/prometheus",
     "github.com/prometheus/client_golang/prometheus/promhttp",
+    "github.com/rs/xid",
     "github.com/sirupsen/logrus",
   ]
   solver-name = "gps-cdcl"

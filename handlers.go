@@ -5,8 +5,10 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/jpweber/cole/dmtimer"
 	"github.com/prometheus/alertmanager/template"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/rs/xid"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -45,7 +47,11 @@ func ping(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	ns.Message = data
-	timerID := ns.Message.Alerts[0].Labels["alertname"]
+	timerID, err := dmtimer.ParseTimerID(r.URL.Path)
+	if err != nil {
+		log.Println("Cannot register checkin", err)
+	}
+	// timerID := ns.Message.Alerts[0].Labels["alertname"]
 	// DEBUG
 	log.Println("timerID:", timerID)
 	if err != nil {
@@ -64,4 +70,14 @@ func ping(w http.ResponseWriter, r *http.Request) {
 	// DEBUG
 	timerCount.Set(float64(ns.Timers.Len()))
 	w.WriteHeader(200)
+}
+
+func genID(w http.ResponseWriter, r *http.Request) {
+	guid := xid.New()
+	response := map[string]string{"timerid": guid.String()}
+	// jsonResp, _ := json.Marshal(response)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(response)
+
 }

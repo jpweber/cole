@@ -10,6 +10,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/caarlos0/env"
 	"github.com/jpweber/cole/configuration"
 	"github.com/jpweber/cole/notifier"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -23,7 +24,8 @@ const (
 )
 
 var (
-	ns = notifier.NotificationSet{}
+	ns   = notifier.NotificationSet{}
+	conf = configuration.Conf{}
 )
 
 func init() {
@@ -41,7 +43,7 @@ func init() {
 func main() {
 
 	versionPtr := flag.Bool("v", false, "Version")
-	configFile := flag.String("c", "example.toml", "Path to Configuration File")
+	configFile := flag.String("c", "", "Path to Configuration File")
 
 	// Once all flags are declared, call `flag.Parse()`
 	// to execute the command-line parsing.
@@ -53,8 +55,19 @@ func main() {
 
 	log.Println("Starting application...")
 
-	// read from config file
-	conf := configuration.ReadConfig(*configFile)
+	// if no config file parameter was passed try env vars.
+	if *configFile == "" {
+		conf := configuration.Conf{}
+		if err := env.Parse(&conf); err != nil {
+			log.Fatal("Unable to parse envs: ", err)
+		}
+	} else {
+		// read from config file
+		conf = configuration.ReadConfig(*configFile)
+	}
+
+	// DEBUG
+	// fmt.Printf("%+v", conf)
 
 	// init first timer at launch of service
 	// TODO:

@@ -50,4 +50,4 @@ PDIntegrationKey = "5353fb993888441811111111111"
 * clone the repo
 * `dep ensure -v`
 * `go build`
-That is it. 
+That is it.

@@ -26,6 +26,14 @@
   revision = "3a771d992973f24aa725d07868b467d1ddfceafb"
 
 [[projects]]
+  digest = "1:a571648c5f1a3f20fa405d1cf924b941c5bb236ea6d0565a63c0994e38dd8f82"
+  name = "github.com/caarlos0/env"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "518fcfb943252f77846f92ce5794086d9cb4a1b5"
+  version = "v3.5.0"
+
+[[projects]]
   digest = "1:97df918963298c287643883209a2c3f642e6593379f97ab400c2a2e219ab647d"
   name = "github.com/golang/protobuf"
   packages = ["proto"]
@@ -155,6 +163,7 @@
   input-imports = [
     "github.com/BurntSushi/toml",
     "github.com/PagerDuty/go-pagerduty",
+    "github.com/caarlos0/env",
     "github.com/prometheus/alertmanager/template",
     "github.com/prometheus/client_golang/prometheus",
     "github.com/prometheus/client_golang/prometheus/promhttp",

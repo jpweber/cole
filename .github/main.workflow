@@ -3,6 +3,7 @@ workflow "Build and Push" {
   resolves = [
     "Docker Login",
     "docker push",
+    "goreleaser",
   ]
 }
 
@@ -31,8 +32,14 @@ action "docker push" {
   needs = ["Docker Tag"]
   secrets = ["DOCKER_USERNAME", "DOCKER_PASSWORD"]
   args = ["push", "$CONTAINER_REGISTRY_PATH/$IMAGE_NAME"]
-    env = {
+  env = {
     IMAGE_NAME = "cole"
     CONTAINER_REGISTRY_PATH = "jpweber"
   }
+}
+
+action "goreleaser" {
+  uses = "./action-goreleaser"
+  secrets = ["GITHUB_TOKEN"]
+  args = "release"
 }

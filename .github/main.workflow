@@ -30,7 +30,7 @@ action "docker push" {
   uses = "actions/docker/cli@76ff57a"
   needs = ["Docker Tag"]
   secrets = ["DOCKER_USERNAME", "DOCKER_PASSWORD"]
-  args = "[\"push\",\"$CONTAINER_REGISTRY_PATH/$IMAGE_NAME\"]"
+  args = ["push", "$CONTAINER_REGISTRY_PATH/$IMAGE_NAME"]
     env = {
     IMAGE_NAME = "cole"
     CONTAINER_REGISTRY_PATH = "jpweber"

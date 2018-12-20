@@ -31,6 +31,19 @@ func (d *DmTimers) Del(key string, value *time.Timer) {
 	d.mu.Unlock()
 }
 
+func (d *DmTimers) Keys() []string {
+	keys := []string{}
+	for k := range d.list {
+		keys = append(keys, k)
+		fmt.Println(k)
+	}
+
+	return keys
+}
+
+func (d *DmTimers) Len() int {
+	return len(d.list)
+}
 func ParseTimerID(url string) (string, error) {
 	// expeted format foo.com/ping/123456asdf we want the part afer /ping/
 	urlParts := strings.Split(url, "/")

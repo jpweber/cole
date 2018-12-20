@@ -8,13 +8,12 @@ import (
 )
 
 type Conf struct {
-	SenderType       string
-	Interval         int
-	HTTPEndpoint     string
-	HTTPMethod       string
-	EmailAddress     string
-	PDAPIKey         string
-	PDIntegrationKey string
+	SenderType       string `env:"SENDER_TYPE,required"`
+	Interval         int    `env:"INTERVAL" envDefault:"65"`
+	HTTPEndpoint     string `env:"HTTP_ENDPOINT"`
+	HTTPMethod       string `env:"HTTP_METHOD" envDefault:"POST"`
+	EmailAddress     string `env:"EMAIL_ADDR"`
+	PDIntegrationKey string `env:"PD_KEY"`
 }
 
 // Reads info from config file

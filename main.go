@@ -10,22 +10,40 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/caarlos0/env"
 	"github.com/jpweber/cole/configuration"
 	"github.com/jpweber/cole/notifier"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/jpweber/cole/alertmanager"
 	"github.com/jpweber/cole/dmtimer"
 )
 
 const (
-	version = "v0.1.0"
+	version = "v0.2.0"
 )
+
+var (
+	ns   = notifier.NotificationSet{}
+	conf = configuration.Conf{}
+)
+
+func init() {
+	// Log as text. Color with tty attached
+	log.SetFormatter(&log.TextFormatter{})
+
+	// Output to stdout instead of the default stderr
+	// Can be any io.Writer, see below for File example
+	log.SetOutput(os.Stdout)
+
+	// Only log the warning severity or above.
+	// log.SetLevel(log.WarnLevel)
+}
 
 func main() {
 
 	versionPtr := flag.Bool("v", false, "Version")
-	configFile := flag.String("c", "example.toml", "Path to Configuration File")
+	configFile := flag.String("c", "", "Path to Configuration File")
 
 	// Once all flags are declared, call `flag.Parse()`
 	// to execute the command-line parsing.
@@ -37,8 +55,19 @@ func main() {
 
 	log.Println("Starting application...")
 
-	// read from config file
-	conf := configuration.ReadConfig(*configFile)
+	// if no config file parameter was passed try env vars.
+	if *configFile == "" {
+		conf := configuration.Conf{}
+		if err := env.Parse(&conf); err != nil {
+			log.Fatal("Unable to parse envs: ", err)
+		}
+	} else {
+		// read from config file
+		conf = configuration.ReadConfig(*configFile)
+	}
+
+	// DEBUG
+	// fmt.Printf("%+v", conf)
 
 	// init first timer at launch of service
 	// TODO:
@@ -47,46 +76,18 @@ func main() {
 	// switch is not being tripped.
 
 	// init notificaiton set
-	ns := notifier.NotificationSet{
+	ns = notifier.NotificationSet{
 		Config: conf,
 		Timers: dmtimer.DmTimers{},
 	}
 
 	// HTTP Handlers
-	http.HandleFunc("/ping/", func(w http.ResponseWriter, r *http.Request) {
-		// init my error
-		var err error
-
-		if r.Method != "POST" {
-			http.Error(w, "Only POST method is supported", 405)
-			return
-		}
-		log.Info("Pong")
-		ns.Message, err = alertmanager.DecodeAlertMessage(r)
-		if err != nil {
-			log.Error(err)
-			return
-		}
-		timerID := ns.Message.GroupLabels["alertname"]
-		log.Info(timerID)
-		if err != nil {
-			log.Println("Cannot register checkin", err)
-		}
-
-		if ns.Timers.Get(timerID) != nil {
-			// stop any existing timer channel
-			ns.Timers.Get(timerID).Stop()
-		}
-
-		// start a new timer
-		ns.Timers.Add(timerID, time.AfterFunc(time.Duration(ns.Config.Interval)*time.Second, ns.Alert))
-		w.WriteHeader(200)
-
-	})
-
+	http.HandleFunc("/ping/", logger(ping))
+	http.HandleFunc("/id", logger(genID))
 	http.HandleFunc("/version", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, version)
 	})
+	http.Handle("/metrics", promhttp.Handler())
 
 	// Server Lifecycle
 	s := &http.Server{

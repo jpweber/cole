@@ -57,12 +57,14 @@ func main() {
 
 	// if no config file parameter was passed try env vars.
 	if *configFile == "" {
-		conf := configuration.Conf{}
+		log.Info("Using ENV Vars for configuration")
+		conf = configuration.Conf{}
 		if err := env.Parse(&conf); err != nil {
 			log.Fatal("Unable to parse envs: ", err)
 		}
 	} else {
 		// read from config file
+		log.Info("Reading from config file")
 		conf = configuration.ReadConfig(*configFile)
 	}
 

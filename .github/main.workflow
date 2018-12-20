@@ -39,7 +39,7 @@ action "docker push" {
 }
 
 action "goreleaser" {
-  uses = "./action-goreleaser"
+  uses = "./action-goreleaser/"
   secrets = ["GITHUB_TOKEN"]
   args = "release"
 }

@@ -14,6 +14,9 @@ type Conf struct {
 	HTTPMethod       string `env:"HTTP_METHOD" envDefault:"POST"`
 	EmailAddress     string `env:"EMAIL_ADDR"`
 	PDIntegrationKey string `env:"PD_KEY"`
+	SlackChannel     string `env:"SLACK_CHANNEL" envDefault:"#general"`
+	SlackUsername    string `env:"SLACK_USERNAME" envDefault:"Cole - DeadManSwitch Monitor"`
+	SlackIcon        string `env:"SLACK_ICON" envDefault:":monkey_face:"`
 }
 
 // Reads info from config file

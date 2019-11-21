@@ -79,9 +79,9 @@ func (n *NotificationSet) slack() {
 	log.Println("slack method")
 	payload := slack.Payload{
 		Text:      "Missed DeadManSwitch Alert  - " + n.Message.CommonAnnotations["message"],
-		Username:  "Cole - DeadManSwitch Monitor",
-		Channel:   "#general",
-		IconEmoji: ":monkey_face:",
+		Username:  n.Config.SlackUsername,
+		Channel:   n.Config.SlackChannel,
+		IconEmoji: n.Config.SlackIcon,
 	}
 	jsonBody, err := json.Marshal(payload)
 	if err != nil {

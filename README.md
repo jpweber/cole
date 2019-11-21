@@ -66,6 +66,9 @@ There is a forthcoming blog post on [jpweber.io](http://jpweber.io/blog
 # Interval = 10
 # HTTPEndpoint = "https://hooks.slack.com/services/..."
 # HTTPMethod = "POST"
+# SlackChannel = "#general"
+# SlackUsername = "Cole - DeadManSwitch Monitor"
+# SlackIcon = ":monkey_face:"
 
 
 # PagerDuty
@@ -83,6 +86,9 @@ PDIntegrationKey = "5353fb993888441811111111111"
 * `HTTP_METHOD`
 * `EMAIL_ADDR`
 * `PD_KEY`
+* `SLACK_CHANNEL`
+* `SLACK_USERNAME`
+* `SLACK_ICON`
 
 ## Example Prometheus Alert Manager config
 

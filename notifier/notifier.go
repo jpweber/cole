@@ -57,11 +57,18 @@ func (n *NotificationSet) genericWebHook(jsonBody []byte) {
 		n.Config.HTTPEndpoint,
 		bytes.NewBuffer(jsonBody),
 	)
+	if err != nil {
+		log.Error("Error:", err)
+		// If we couldn't create a request object, we have nothing to send
+		return
+	}
 	req.Header.Set("Content-Type", "application/json")
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Error("Error:", err)
+		// Sending the webhook failed, so don't attempt to process the response
+		return
 	}
 	defer resp.Body.Close()
 

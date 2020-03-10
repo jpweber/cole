@@ -18,6 +18,7 @@ There is a forthcoming blog post on [jpweber.io](http://jpweber.io/blog
 
 * Slack
 * PagerDuty
+* MsTeams
 * Generic Webhook
 
 ## How to use
@@ -76,6 +77,11 @@ SenderType = "pagerduty"
 Interval = 10
 PDAPIKey = "noiD8-khbpNpgAAAAAAAAAA"
 PDIntegrationKey = "5353fb993888441811111111111"
+
+# Ms Teams
+SenderType = "teams"
+Interval = 10
+HTTPEndpoint = "https://hooks.teams.com/services/..."
 ```
 
 ### Flags supported as ENV Vars

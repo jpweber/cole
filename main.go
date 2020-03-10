@@ -92,6 +92,8 @@ func main() {
 	http.Handle("/metrics", promhttp.Handler())
 
 	// Server Lifecycle
+	//To setup a insecure server for http without any tls validation
+	/*
 	s := &http.Server{
 		Addr:         ":8080",
 		ReadTimeout:  5 * time.Second,
@@ -100,6 +102,17 @@ func main() {
 	go func() {
 		log.Fatal(s.ListenAndServe())
 	}()
+	*/
+
+	//To setup a https secure server with certificate validation.
+	s := &http.Server{
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
+	}
+	err := http.ListenAndServeTLS(":443", "/usr/local/share/ca-certificates/https-server.crt", "/usr/local/share/ca-certificates/https-server.key", nil);
+	if err != nil {
+	    log.Fatal(err)
+	 }
 
 	signalChan := make(chan os.Signal, 1)
 	signal.Notify(signalChan, syscall.SIGINT, syscall.SIGTERM)

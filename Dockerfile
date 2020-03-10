@@ -15,5 +15,10 @@ RUN apk --update upgrade && \
     apk add ca-certificates && \
     update-ca-certificates && \
     rm -rf /var/cache/apk/*
+
+# For the case of HTTP insecure server, comment the below two lines
+COPY ./https-server.crt /usr/local/share/ca-certificates/https-server.crt
+COPY ./https-server.key /usr/local/share/ca-certificates/https-server.key
+
 COPY --from=build /go/src/github.com/jpweber/cole/app /cole
 CMD ["/cole"]

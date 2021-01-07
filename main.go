@@ -9,6 +9,7 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+	"crypto/tls"
 
 	"github.com/caarlos0/env"
 	"github.com/jpweber/cole/configuration"
@@ -105,11 +106,26 @@ func main() {
 	*/
 
 	//To setup a https secure server with certificate validation.
+        //To setup a https secure server with TLS 1.2
+         cfg := &tls.Config{
+		MinVersion:               tls.VersionTLS12,
+		PreferServerCipherSuites: true,
+		CipherSuites: []uint16{
+			tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
+			tls.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
+			tls.TLS_RSA_WITH_AES_256_GCM_SHA384,
+			tls.TLS_RSA_WITH_AES_256_CBC_SHA,
+		},
+	}
+
+
 	s := &http.Server{
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
 	}
-	err := http.ListenAndServeTLS(":443", "/usr/local/share/ca-certificates/https-server.crt", "/usr/local/share/ca-certificates/https-server.key", nil);
+	#err := http.ListenAndServeTLS(":443", "/usr/local/share/ca-certificates/https-server.crt", "/usr/local/share/ca-certificates/https-server.key", nil);
+	err  := s.ListenAndServeTLS("/usr/local/share/ca-certificates/https-server.crt", "/usr/local/share/ca-certificates/https-server.key");
+
 	if err != nil {
 	    log.Fatal(err)
 	 }

@@ -92,7 +92,7 @@ func (n *NotificationSet) teams() {
 
     fact1:= teams.Fact{Name:"Alertname:", Value:"Watchdog Failure"}
     fact2:= teams.Fact{Name:"Severity:", Value:"Critical"}
-    fact3:= teams.Fact{Name:"Environment:", Value:"SIT"}
+    fact3:= teams.Fact{Name:"Environment:", Value:n.Config.ClusterLabel}
     fact4:= teams.Fact{Name:"Message:", Value:"Your entire Prometheus alerting pipeline is failing. Deadman switch noticed a Watchdog failure"}
     fact5:= teams.Fact{Name:"Action Required:", Value:"Please make sure Alert manager service is functional"}
     section:= teams.Section{ActivityTitle:"*** IMPORTANT !!! ***", Facts: []teams.Fact{fact1, fact2, fact3, fact4, fact5}}

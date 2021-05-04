@@ -17,6 +17,7 @@ type Conf struct {
 	SlackChannel     string `env:"SLACK_CHANNEL" envDefault:"#general"`
 	SlackUsername    string `env:"SLACK_USERNAME" envDefault:"Cole - DeadManSwitch Monitor"`
 	SlackIcon        string `env:"SLACK_ICON" envDefault:":monkey_face:"`
+	ClusterLabel	 string `env:"LABEL"`
 }
 
 // Reads info from config file
